@@ -8,7 +8,7 @@ const pg = require('pg');
 const path = require('path');
 const connectionString = process.env.DATABASE_URL ;
 
-app.get('/api/v1/quotes', (req, res, next) => {
+app.get('/v1/random', (req, res, next) => {
   const results = [];
   // Get a Postgres client from the connection pool
   pg.connect(connectionString, (err, client, done) => {
@@ -19,7 +19,7 @@ app.get('/api/v1/quotes', (req, res, next) => {
       return res.status(500).json({success: false, data: err});
     }
     // SQL Query > Select Data
-    const query = client.query('SELECT * FROM quotes;');
+    const query = client.query('select quote from quotes ORDER BY random() limit 1');
     // Stream results back one row at a time
     query.on('row', (row) => {
       results.push(row);
