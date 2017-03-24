@@ -1,61 +1,35 @@
-var express = require('express');
-var app = express();
+require('dotenv').config();
 
-var quotes = [
-  { author : 'Audrey Hepburn', text : "Nothing is impossible, the word itself says 'I'm possible'!"},
-  { author : 'Walt Disney', text : "You may not realize it when it happens, but a kick in the teeth may be the best thing in the world for you"},
-  { author : 'Unknown', text : "Even the greatest was once a beginner. Don’t be afraid to take that first step."},
-  { author : 'Neale Donald Walsch', text : "You are afraid to die, and you’re afraid to live. What a way to exist."}
-];
+const express = require('express');
+const app = express();
+var  port = process.env.PORT || 3000;
+const router = express.Router();
+const pg = require('pg');
+const path = require('path');
+const connectionString = process.env.DATABASE_URL ;
 
-app.use(express.bodyParser());
-
-app.get('/quote', function(req, res) {
-  res.json(quotes);
+app.get('/api/v1/quotes', (req, res, next) => {
+  const results = [];
+  // Get a Postgres client from the connection pool
+  pg.connect(connectionString, (err, client, done) => {
+    // Handle connection errors
+    if(err) {
+      done();
+      console.log(err);
+      return res.status(500).json({success: false, data: err});
+    }
+    // SQL Query > Select Data
+    const query = client.query('SELECT * FROM quotes;');
+    // Stream results back one row at a time
+    query.on('row', (row) => {
+      results.push(row);
+    });
+    // After all data is returned, close connection and return results
+    query.on('end', () => {
+      done();
+      return res.json(results);
+    });
+  });
 });
 
-app.get('/quote/random', function(req, res) {
-  var id = Math.floor(Math.random() * quotes.length);
-  var q = quotes[id];
-  res.json(q);
-});
-
-app.get('/quote/:id', function(req, res) {
-  if(quotes.length <= req.params.id || req.params.id < 0) {
-    res.statusCode = 404;
-    return res.send('Error 404: No quote found');
-  }
-
-  var q = quotes[req.params.id];
-  res.json(q);
-});
-
-app.post('/quote', function(req, res) {
-  if(!req.body.hasOwnProperty('author') || !req.body.hasOwnProperty('text')) {
-    res.statusCode = 400;
-    return res.send('Error 400: Post syntax incorrect.');
-  }
-
-  var newQuote = {
-    author : req.body.author,
-    text : req.body.text
-  };
-
-  quotes.push(newQuote);
-  res.json(true);
-});
-
-app.delete('/quote/:id', function(req, res) {
-  if(quotes.length <= req.params.id) {
-    res.statusCode = 404;
-    return res.send('Error 404: No quote found');
-  }
-
-  quotes.splice(req.params.id, 1);
-  res.json(true);
-});
-
-
-app.listen(process.env.PORT || 3000);
-
-
+app.listen(port);
