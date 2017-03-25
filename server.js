@@ -25,7 +25,7 @@ app.use(function (req, res, next) {
     }
 });
 
-app.get('/v1/quote/random', (req, res, next) => {
+app.get('/v1/quotes/random', (req, res, next) => {
   const results = [];
   // Get a Postgres client from the connection pool
   pg.connect(connectionString, (err, client, done) => {
@@ -49,8 +49,31 @@ app.get('/v1/quote/random', (req, res, next) => {
   });
 });
 
+app.get('/v1/quotes', (req, res, next) => {
+  const results = [];
+  // Get a Postgres client from the connection pool
+  pg.connect(connectionString, (err, client, done) => {
+    // Handle connection errors
+    if(err) {
+      done();
+      console.log(err);
+      return res.status(500).json({success: false, data: err});
+    }
+    // SQL Query > Select Data
+    const query = client.query('select id,quote from quotes ORDER BY id ASC');
+    // Stream results back one row at a time
+    query.on('row', (row) => {
+      results.push(row);
+    });
+    // After all data is returned, close connection and return results
+    query.on('end', () => {
+      done();
+      return res.json(results);
+    });
+  });
+});
 
-app.post('/v1/quote', (req, res, next) => {
+app.post('/v1/quotes', (req, res, next) => {
 
     if (req.header('apikey') == localApiKey)
      {
@@ -91,7 +114,45 @@ app.post('/v1/quote', (req, res, next) => {
 
 });
 
-app.delete('/v1/quote/:quote_id', (req, res, next) => {
+app.put('/v1/quotes/:quote_id', (req, res, next) => {
+if (req.header('apikey') == localApiKey)
+     {
+      const results = [];
+      // Grab data from the URL parameters
+      const id = req.params.quote_id;
+      // Grab data from http request
+      const data = {quote: req.body.quote};
+      // Get a Postgres client from the connection pool
+      pg.connect(connectionString, (err, client, done) => {
+        // Handle connection errors
+        if(err) {
+          done();
+          console.log(err);
+          return res.status(500).json({success: false, data: err});
+        }
+        // SQL Query > Update Data
+        client.query('UPDATE quotes SET quote=($1) WHERE id=($2)',
+        [data.quote, id]);
+        // SQL Query > Select Data
+        const query = client.query("SELECT * FROM quotes ORDER BY id ASC");
+        // Stream results back one row at a time
+        query.on('row', (row) => {
+          results.push(row);
+        });
+        // After all data is returned, close connection and return results
+        query.on('end', function() {
+          done();
+          return res.json(results);
+        });
+      });
+     }
+    else 
+    {
+        res.json({message: 'invalid key'});
+    }     
+});
+
+app.delete('/v1/quotes/:quote_id', (req, res, next) => {
      if (req.header('apikey') == localApiKey)
      {
         const results = [];
