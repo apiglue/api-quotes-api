@@ -8,7 +8,7 @@ const router = express.Router();
 const pg = require('pg');
 const path = require('path');
 const connectionString = process.env.DATABASE_URL ;
-const localApiKey = process.env.APIKEY;
+const localApiKey = process.env.API_KEY;
 
 app.use(bodyParser.urlencoded({
     extended: true
