@@ -36,7 +36,7 @@ app.get('/v1/quotes/random', (req, res, next) => {
       return res.status(500).json({success: false, data: err});
     }
     // SQL Query > Select Data
-    const query = client.query('select quote from quotes ORDER BY random() limit 1');
+    const query = client.query('select id,quote from quotes ORDER BY random() limit 1');
     // Stream results back one row at a time
     query.on('row', (row) => {
       results.push(row);
