@@ -15,15 +15,15 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-app.use(function (req, res, next) {
-
-    if (req.header('apikey') == localApiKey) {
-        next();
-    }
-    else {
-        res.json({message: 'invalid key'});
-    }
-});
+//app.use(function (req, res, next) {
+//
+//    if (req.header('apikey') == localApiKey) {
+//        next();
+//    }
+//    else {
+//        res.json({message: 'invalid key'});
+//    }
+//});
 
 app.get('/v1/quotes/random', (req, res, next) => {
   const results = [];
