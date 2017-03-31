@@ -70,7 +70,7 @@ app.route('/v1/quotes')
               return res.status(500).json({success: false, data: err});
             }
 
-            const query = client.query('select id,quote from quotes ORDER BY id ASC');
+            const query = client.query('SELECT id,quote FROM quotes ORDER BY id ASC');
 
             query.on('row', (row) => {
               results.push(row);
