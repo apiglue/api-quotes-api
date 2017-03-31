@@ -1,7 +1,10 @@
 {
   "name": "sample-quote-api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
+  "engines": {
+    "node": "7.7.1"
+  },
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -21,6 +24,7 @@
     "body-parser": "^1.17.1",
     "dotenv": "^4.0.0",
     "express": "^4.15.2",
+    "newrelic": "^1.38.2",
     "pg": "^6.1.5"
   }
 }

@@ -1,3 +1,5 @@
+require('newrelic');
+
 require('dotenv').config();
 
 var express = require('express');
