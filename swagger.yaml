@@ -1,0 +1,149 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: "Api quote api"
+  description: An api that will return an inspiring api quote randomly
+  termsOfService: http://swagger.io/terms/
+  contact:
+    name: Marcelo
+    email: foo@example.com
+    url: http://twitter.com/apiglue
+  license:
+    name: MIT
+    url: http://github.com/gruntjs/grunt/blob/master/LICENSE-MIT
+host: apiquote-api.herokuapp.com
+basePath: /v1/quotes
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /random:
+    get:
+      description: Return a random api quote
+      operationId: random
+      responses:
+        200:
+          description: Quote response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NewQuote'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /:
+    get:
+      description: Return all quotes
+      operationId: random
+      responses:
+        200:
+          description: Quote response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Quote'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /{id}:
+    get:
+      description: Returns a quote based on a single ID
+      operationId: find quote by id
+      parameters:
+        - name: id
+          in: path
+          description: ID of quote to fetch
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: pet response
+          schema:
+            $ref: '#/definitions/Quote'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      description: Create a single quote
+      operationId: createQuote
+      parameters:
+        - name: id
+          in: path
+          description: ID of pet to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        204:
+          description: pet deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      description: deletes a single quote based on the ID supplied
+      operationId: deleteQuote
+      parameters:
+        - name: id
+          in: path
+          description: ID of pet to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        204:
+          description: pet deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'            
+    delete:
+      description: deletes a single pet based on the ID supplied
+      operationId: deletePet
+      parameters:
+        - name: id
+          in: path
+          description: ID of pet to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        204:
+          description: pet deleted
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Quote:
+    allOf:
+      - $ref: '#/definitions/NewQuote'
+      - required:
+        - id
+        properties:
+          id:
+            type: integer
+            format: int64
+         
+  NewQuote:
+    required:
+      - quote
+    properties:
+      name:
+        type: string
+      tag:
+        type: string
+  Error:
+    required:
+      - message
+    properties:
+      message:
+        type: string
