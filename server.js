@@ -17,74 +17,106 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
+
+app.route('/v1/quotes/random')
+  .get(function (req, res, next)  {
+    
+      const results = [];
+
+      pg.connect(connectionString, (err, client, done) => {
+
+        if(err) {
+          done();
+          console.log(err);
+          return res.status(500).json({success: false, data: err});
+        }
+
+        var query = client.query('SELECT quote FROM quotes ORDER BY random() limit 1');               
+        
+        query.on('error', function(err) {
+          console.log('Query error: ' + err);
+          return res.status(500).send();
+        });
+
+        query.on('row', (row) => {
+          results.push(row);
+        });
+
+        query.on('end', () => {
+          done();
+          return res.json(results);
+        });
+      });      
+  });
+
+//APIKEY required for all other methods
+app.use(function (req, res, next) {
+    if (req.header('apikey') == localApiKey) {
+        next();
+    }
+    else {
+          res.status(401);
+          res.json({message: 'invalid api key'});
+        }
+});
+
 app.route('/v1/quotes')
   .post(function (req, res, next) {
 
-      if (req.header('apikey') == localApiKey)
+      if (!req.body.quote)
       {
-        const results = [];
+        return res.status(412).json({error: "Quote not found on body"});
+      }
 
-        const data = {quote: req.body.quote};
+      const results = [];
+      const data = {quote: req.body.quote};
 
-        pg.connect(connectionString, (err, client, done) => {
+      pg.connect(connectionString, (err, client, done) => {
 
-          if(err) {
-            done();
-            console.log("[ERROR]"+err);
-            return res.status(500).json({success: false, data: err});
-          }
+        if(err) {
+          done();
+          console.log("[ERROR]"+err);
+          return res.status(500).json({success: false, data: err});
+        }
 
-          client.query('INSERT INTO quotes(quote) values($1)',[data.quote]);
-
-          const query = client.query('SELECT id,quote FROM quotes ORDER BY id ASC');
-
-          query.on('row', (row) => {
-            results.push(row);
-          });
-
-          query.on('end', () => {
-            done();
-            return res.json(results);
-          });
+        var query = client.query('INSERT INTO quotes(quote) values($1)',[data.quote]);
+        
+        query.on('error', function(err) {
+          console.log('Query error: ' + err);
+          return res.status(500).send();
         });
-      }
 
-    else 
-      {
-          res.json({message: 'invalid key'});
-      }
-
-
-  })
+        return res.status(201).send();
+   
+      });
+  })  
   .get(function (req, res, next) {
-      if (req.header('apikey') == localApiKey)
-      {
-          const results = [];
+      const results = [];
 
-          pg.connect(connectionString, (err, client, done) => {
+      pg.connect(connectionString, (err, client, done) => {
 
-            if(err) {
-              done();
-              console.log(err);
-              return res.status(500).json({success: false, data: err});
-            }
+        if(err) {
+          done();
+          console.log(err);
+          return res.status(500).json({success: false, data: err});
+        }
 
-            const query = client.query('SELECT id,quote FROM quotes ORDER BY id ASC');
+        var query = client.query('SELECT id,quote FROM quotes ORDER BY id ASC');
+        
+        query.on('error', function(err) {
+          console.log('Query error: ' + err);
+          return res.status(500).send();
+        });
 
-            query.on('row', (row) => {
-              results.push(row);
-            });
+        query.on('row', (row) => {
+          results.push(row);
+        });
 
-            query.on('end', () => {
-              done();
-              return res.json(results);
-            });
-          });
-      }
-      else 
-      {
-          res.json({message: 'invalid key'});
-      }
+        query.on('end', () => {
+          done();
+          return res.json(results);
+        });
+      });
   });
 
 app.route('/v1/quotes/:quote_id([0-9]+)')
@@ -101,14 +133,12 @@ app.route('/v1/quotes/:quote_id([0-9]+)')
           return res.status(500).json({success: false, data: err});
         }           
 
-        if (quote_id=='random')
-        {
-          var query = client.query('SELECT id,quote FROM quotes ORDER BY random() limit 1');               
-        }
-        else
-        {
-          var query = client.query('SELECT id,quote FROM quotes WHERE id=($1)',[quote_id]);
-        }
+        var query = client.query('SELECT quote FROM quotes WHERE id=($1)',[quote_id]);
+
+        query.on('error', function(err) {
+          console.log('Query error: ' + err);
+          return res.status(500).send();
+        });
 
         query.on('row', (row) => {
           results.push(row);
@@ -122,79 +152,44 @@ app.route('/v1/quotes/:quote_id([0-9]+)')
 
   })
   .put(function (req, res, next) {
-    if (req.header('apikey') == localApiKey)
-        {
-          const results = [];
-          const id = req.params.quote_id;
-          const data = {quote: req.body.quote};
+      
+      if (!req.body.quote)
+      {
+         return res.status(412).json({error: "Quote not found on body"});
+      }
 
-          pg.connect(connectionString, (err, client, done) => {
-            // Handle connection errors
-            if(err) {
-              done();
-              console.log(err);
-              return res.status(500).json({success: false, data: err});
-            }
+      const results = [];
+      const id = req.params.quote_id;
+      const data = {quote: req.body.quote};
 
-            client.query('UPDATE quotes SET quote=($1) WHERE id=($2)',[data.quote, id]);
-
-            const query = client.query("SELECT id,quote FROM quotes ORDER BY id ASC");
-
-            query.on('row', (row) => {
-              results.push(row);
-            });
-
-            query.on('end', function() {
-              done();
-              return res.json(results);
-            });
-          });
+      pg.connect(connectionString, (err, client, done) => {
+        // Handle connection errors
+        if(err) {
+          done();
+          console.log(err);
+          return res.status(500).json({success: false, data: err});
         }
-        else 
-        {
-            res.json({message: 'invalid key'});
-        }     
+
+        client.query('UPDATE quotes SET quote=($1) WHERE id=($2)',[data.quote, id]);
+
+        const query = client.query("SELECT id,quote FROM quotes ORDER BY id ASC");
+
+        query.on('row', (row) => {
+          results.push(row);
+        });
+
+        query.on('end', function() {
+          done();
+           return res.status(204).send();
+        });
+      });
+    
   })
   .delete(function (req, res, next) {
-      if (req.header('apikey') == localApiKey)
-      {
-          const results = [];
-
-          const id = req.params.quote_id;
-
-          pg.connect(connectionString, (err, client, done) => {
-
-            if(err) {
-              done();
-              console.log(err);
-              return res.status(500).json({success: false, data: err});
-            }
-
-            client.query('DELETE FROM quotes WHERE id=($1)', [id]);
-
-            var query = client.query('SELECT id,quote FROM quotes ORDER BY id ASC');
-
-            query.on('row', (row) => {
-              results.push(row);
-            });
-
-            query.on('end', () => {
-              done();
-              return res.json(results);
-            });
-          });
-      }
-      else 
-      {
-          res.json({message: 'invalid key'});
-      }
-  });
-
-app.route('/v1/quotes/random')
-  .get(function (req, res, next)  {
-    
+      
       const results = [];
-      const quote_id = req.params.quote_id;
+
+      const id = req.params.quote_id;
 
       pg.connect(connectionString, (err, client, done) => {
 
@@ -204,18 +199,13 @@ app.route('/v1/quotes/random')
           return res.status(500).json({success: false, data: err});
         }
 
-        var query = client.query('SELECT quote FROM quotes ORDER BY random() limit 1');               
+        client.query('DELETE FROM quotes WHERE id=($1)', [id]);
+        
+        return res.status(204).send();
 
-        query.on('row', (row) => {
-          results.push(row);
-        });
-
-        query.on('end', () => {
-          done();
-          return res.json(results);
-        });
-      });      
+      });
   });
 
-
+//RUN
 app.listen(port);
+console.log('Server up on port: ' + port);
