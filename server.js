@@ -34,8 +34,7 @@ app.route('/v1/quotes')
             return res.status(500).json({success: false, data: err});
           }
 
-          client.query('INSERT INTO quotes(quote) values($1)',
-          [data.quote]);
+          client.query('INSERT INTO quotes(quote) values($1)',[data.quote]);
 
           const query = client.query('SELECT id,quote FROM quotes ORDER BY id ASC');
 
@@ -137,8 +136,7 @@ app.route('/v1/quotes/:quote_id([0-9]+)')
               return res.status(500).json({success: false, data: err});
             }
 
-            client.query('UPDATE quotes SET quote=($1) WHERE id=($2)',
-            [data.quote, id]);
+            client.query('UPDATE quotes SET quote=($1) WHERE id=($2)',[data.quote, id]);
 
             const query = client.query("SELECT id,quote FROM quotes ORDER BY id ASC");
 
@@ -206,7 +204,7 @@ app.route('/v1/quotes/random')
           return res.status(500).json({success: false, data: err});
         }
 
-        var query = client.query('SELECT id,quote FROM quotes ORDER BY random() limit 1');               
+        var query = client.query('SELECT quote FROM quotes ORDER BY random() limit 1');               
 
         query.on('row', (row) => {
           results.push(row);
