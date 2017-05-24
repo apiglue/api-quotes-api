@@ -164,10 +164,3 @@ definitions:
         type: string
         description: quote itself
         example: 'KEEP CALM and let the API handle it'
-     
-  Error:
-    required:
-      - message
-    properties:
-      message:
-        type: string
