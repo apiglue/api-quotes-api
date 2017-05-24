@@ -82,13 +82,16 @@ paths:
     post:
       description: Create a single quote
       operationId: createQuote
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
       parameters:
-        - name: id
-          in: path
-          description: ID of pet to delete
+        - name: quote
+          in: formData
+          description: quote to be added
           required: true
-          type: integer
-          format: int64
+          type: string
       responses:
         204:
           description: pet deleted
@@ -132,6 +135,13 @@ paths:
             $ref: '#/definitions/Error'
 
 definitions:
+  NewQuote:
+    type: object
+    properties:
+      quote:
+        type: string
+        description: quote itself
+        example: 'KEEP CALM and let the API handle it'    
   Quote:
     type: object
     properties:
