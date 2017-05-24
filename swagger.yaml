@@ -82,16 +82,21 @@ paths:
     post:
       description: Create a single quote
       operationId: createQuote
-      consumes:
-        - application/x-www-form-urlencoded
-      produces:
-        - application/json
       parameters:
+        - name: apikey
+          in: header
+          description: api key
+          required: true
+          type: string
         - name: quote
           in: formData
           description: quote to be added
           required: true
-          type: string
+          type: string          
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
       responses:
         204:
           description: pet deleted
