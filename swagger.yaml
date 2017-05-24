@@ -123,8 +123,8 @@ paths:
       consumes:
         - application/x-www-form-urlencoded
       responses:
-        '201':
-          description: Quote Created
+        '204':
+          description: Quote updated
         '401':
           description: Invalid api key
         '412':
