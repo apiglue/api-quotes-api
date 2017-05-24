@@ -35,21 +35,26 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
+  
   /:
     get:
       description: Return all quotes
-      operationId: random
+      operationId: allrandom
+      parameters:
+        - name: apikey
+          in: header
+          description: api key
+          required: true
+          type: string      
       responses:
-        200:
+        '200':
           description: Quote response
           schema:
             type: array
             items:
               $ref: '#/definitions/Quote'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
+        '401':
+          description: Invalid api key              
 
   /{id}:
     get:
@@ -62,15 +67,22 @@ paths:
           required: true
           type: integer
           format: int64
+        - name: apikey
+          in: header
+          description: api key
+          required: true
+          type: string
       responses:
-        200:
-          description: pet response
+        '200':
+          description: Quote response
           schema:
-            $ref: '#/definitions/Quote'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/NewQuote'
+        '400':
+          description: Invalid ID supplied
+        '401':
+          description: Invalid api key
+        '404':
+          description: Quote not found
     post:
       description: Create a single quote
       operationId: createQuote
@@ -125,21 +137,16 @@ paths:
 definitions:
   Quote:
     allOf:
-      - $ref: '#/definitions/NewQuote'
       - required:
         - id
         properties:
           id:
             type: integer
             format: int64
-         
+      - $ref: '#/definitions/NewQuote'         
   NewQuote:
-    required:
-      - quote
     properties:
-      name:
-        type: string
-      tag:
+      quote:
         type: string
   Error:
     required:
