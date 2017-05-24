@@ -15,8 +15,6 @@ host: apiquote-api.herokuapp.com
 basePath: /v1/quotes
 schemes:
   - https
-security:
-  - APIKeyHeader: []
   
 paths:
   /random:
