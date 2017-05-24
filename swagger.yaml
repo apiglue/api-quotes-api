@@ -138,8 +138,12 @@ definitions:
       id:
         type: integer
         format: int64
+        description: quote id
+        example: 1
       quote:
         type: string
+        description: quote itself
+        example: 'KEEP CALM and let the API handle it'
      
   Error:
     required:
