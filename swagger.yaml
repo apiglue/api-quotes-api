@@ -30,11 +30,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/NewQuote'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
+              $ref: '#/definitions/Quote'
   
   /:
     get:
@@ -54,7 +50,7 @@ paths:
             items:
               $ref: '#/definitions/Quote'
         '401':
-          description: Invalid api key              
+          description: invalid api key              
 
   /{id}:
     get:
@@ -76,7 +72,7 @@ paths:
         '200':
           description: Quote response
           schema:
-            $ref: '#/definitions/NewQuote'
+            $ref: '#/definitions/Quote'
         '400':
           description: Invalid ID supplied
         '401':
@@ -134,7 +130,17 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
+
 definitions:
+  Quote1:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      quote:
+        type: string
+
   Quote:
     allOf:
       - required:
@@ -143,11 +149,8 @@ definitions:
           id:
             type: integer
             format: int64
-      - $ref: '#/definitions/NewQuote'         
-  NewQuote:
-    properties:
-      quote:
-        type: string
+          quote:
+            type: string        
   Error:
     required:
       - message
