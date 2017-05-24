@@ -102,6 +102,8 @@ paths:
           description: Quote Created
         '401':
           description: Invalid api key
+        '412':
+          description: Quote not supplied          
         '500':
           description: Server error
     put:
@@ -125,6 +127,8 @@ paths:
           description: Quote Created
         '401':
           description: Invalid api key
+        '412':
+          description: Quote not supplied
         '500':
           description: Server error          
     delete:
