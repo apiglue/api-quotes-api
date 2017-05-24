@@ -15,10 +15,10 @@ host: apiquote-api.herokuapp.com
 basePath: /v1/quotes
 schemes:
   - https
-consumes:
-  - application/json
-produces:
-  - application/json
+security:
+  - APIKeyHeader: []
+
+  
 paths:
   /random:
     get:
@@ -34,14 +34,10 @@ paths:
   
   /:
     get:
+      security:
+        - APIKeyHeader: []
       description: Return all quotes
       operationId: allrandom
-      parameters:
-        - name: apikey
-          in: header
-          description: api key
-          required: true
-          type: string      
       responses:
         '200':
           description: Quote response
@@ -54,6 +50,8 @@ paths:
 
   /{id}:
     get:
+      security:
+        - APIKeyHeader: []
       description: Returns a quote based on a single ID
       operationId: find quote by id
       parameters:
@@ -80,6 +78,8 @@ paths:
         '404':
           description: Quote not found
     post:
+      security:
+        - APIKeyHeader: []
       description: Create a single quote
       operationId: createQuote
       parameters:
@@ -107,6 +107,8 @@ paths:
         '500':
           description: Server error
     put:
+      security:
+        - APIKeyHeader: []
       description: Update a single quote
       operationId: updateQuote
       parameters:
@@ -132,6 +134,8 @@ paths:
         '500':
           description: Server error          
     delete:
+      security:
+        - APIKeyHeader: []    
       description: deletes a single quote based on the ID supplied
       operationId: deleteQuote
       parameters:
