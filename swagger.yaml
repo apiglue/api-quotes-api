@@ -17,7 +17,6 @@ schemes:
   - https
 security:
   - APIKeyHeader: []
-
   
 paths:
   /random:
@@ -31,7 +30,6 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Quote'
-  
   /:
     get:
       security:
@@ -57,7 +55,7 @@ paths:
           in: formData
           description: quote to be added
           required: true
-          type: string          
+          type: string
       consumes:
         - application/x-www-form-urlencoded
       produces:
@@ -68,9 +66,9 @@ paths:
         '401':
           description: Invalid api key
         '412':
-          description: Quote not supplied          
+          description: Quote not supplied
         '500':
-          description: Server error          
+          description: Server error
 
   /{id}:
     get:
@@ -113,7 +111,7 @@ paths:
           in: formData
           description: Id of the quote to be updated
           required: true
-          type: string          
+          type: string
       consumes:
         - application/x-www-form-urlencoded
       responses:
@@ -124,10 +122,10 @@ paths:
         '412':
           description: Quote not supplied
         '500':
-          description: Server error          
+          description: Server error
     delete:
       security:
-        - APIKeyHeader: []    
+        - APIKeyHeader: []
       description: deletes a single quote based on the ID supplied
       operationId: deleteQuote
       parameters:
@@ -143,8 +141,8 @@ paths:
         '401':
           description: Invalid api key
         '500':
-          description: Server error 
-
+          description: Server error
+          
 securityDefinitions:
    APIKeyHeader:
      type: apiKey
@@ -159,7 +157,7 @@ definitions:
         type: integer
         format: int64
         description: quote id
-        example: 1
+        example: 42
       quote:
         type: string
         description: quote itself
