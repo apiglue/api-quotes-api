@@ -31,7 +31,7 @@ app.route('/v1/quotes/random')
           return res.status(500).json({success: false, data: err});
         }
 
-        var query = client.query('SELECT quote FROM quotes ORDER BY random() limit 1');               
+        var query = client.query('SELECT id,quote FROM quotes ORDER BY random() limit 1');               
         
         query.on('error', function(err) {
           console.log('Query error: ' + err);
@@ -133,7 +133,7 @@ app.route('/v1/quotes/:quote_id([0-9]+)')
           return res.status(500).json({success: false, data: err});
         }           
 
-        var query = client.query('SELECT quote FROM quotes WHERE id=($1)',[quote_id]);
+        var query = client.query('SELECT id,quote FROM quotes WHERE id=($1)',[quote_id]);
 
         query.on('error', function(err) {
           console.log('Query error: ' + err);
