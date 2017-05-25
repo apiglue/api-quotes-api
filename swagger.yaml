@@ -22,12 +22,16 @@ paths:
       description: Return a random api quote
       operationId: random
       responses:
-        200:
+        '200':
           description: Quote response
           schema:
             type: array
             items:
               $ref: '#/definitions/Quote'
+        '404':
+          description: No quotes were found (possible empty db)
+        '500':
+          description: Server error
   /:
     get:
       security:
@@ -43,6 +47,10 @@ paths:
               $ref: '#/definitions/Quote'
         '401':
           description: invalid api key
+        '404':
+          description: No quotes were found (possible empty db)          
+        '500':
+          description: Server error          
     post:
       security:
         - APIKeyHeader: []
@@ -86,12 +94,12 @@ paths:
           description: Quote response
           schema:
             $ref: '#/definitions/Quote'
-        '400':
-          description: Invalid ID supplied
         '401':
           description: Invalid api key
         '404':
           description: Quote not found
+        '500':
+          description: Server error
 
     put:
       security:
@@ -121,6 +129,7 @@ paths:
           description: Quote not supplied
         '500':
           description: Server error
+    
     delete:
       security:
         - APIKeyHeader: []
@@ -135,7 +144,7 @@ paths:
           format: int64
       responses:
         '204':
-          description: Quote updated
+          description: Quote deleted
         '401':
           description: Invalid api key
         '500':
