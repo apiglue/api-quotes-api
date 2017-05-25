@@ -18,6 +18,17 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 
+//APIKEY required for all other methods
+app.use(function (req, res, next) {
+    if (req.header('apikey') == localApiKey) {
+        next();
+    }
+    else {
+          res.status(401);
+          res.json({message: 'invalid api key'});
+        }
+});
+
 app.route('/v1/quotes/random')
   .get(function (req, res, next)  {
     
@@ -28,7 +39,7 @@ app.route('/v1/quotes/random')
         if(err) {
           done();
           console.log(err);
-          return res.status(500).json({success: false, data: err});
+          return res.status(500).send();
         }
 
         var query = client.query('SELECT id,quote FROM quotes ORDER BY random() limit 1');               
@@ -53,17 +64,6 @@ app.route('/v1/quotes/random')
       });      
   });
 
-//APIKEY required for all other methods
-app.use(function (req, res, next) {
-    if (req.header('apikey') == localApiKey) {
-        next();
-    }
-    else {
-          res.status(401);
-          res.json({message: 'invalid api key'});
-        }
-});
-
 app.route('/v1/quotes')
   .get(function (req, res, next) {
       const results = [];
@@ -73,7 +73,7 @@ app.route('/v1/quotes')
         if(err) {
           done();
           console.log(err);
-          return res.status(500).json({success: false, data: err});
+          return res.status(500).send();
         }
 
         var query = client.query('SELECT id,quote FROM quotes ORDER BY id ASC');
@@ -95,7 +95,7 @@ app.route('/v1/quotes')
           done();
           return res.json(results);
         });
-        
+
       });
   })
   .post(function (req, res, next) {
@@ -113,7 +113,7 @@ app.route('/v1/quotes')
         if(err) {
           done();
           console.log("[ERROR]"+err);
-          return res.status(500).json({success: false, data: err});
+          return res.status(500).send();
         }
 
         var query = client.query('INSERT INTO quotes(quote) values($1)',[data.quote]);
