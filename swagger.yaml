@@ -16,6 +16,9 @@ basePath: /v1/quotes
 schemes:
   - https
   
+security:
+  - APIKeyHeader: []  
+  
 paths:
   /random:
     get:
@@ -34,8 +37,6 @@ paths:
           description: Server error
   /:
     get:
-      security:
-        - APIKeyHeader: []
       description: Return all quotes
       operationId: allrandom
       responses:
@@ -52,8 +53,6 @@ paths:
         '500':
           description: Server error          
     post:
-      security:
-        - APIKeyHeader: []
       description: Create a single quote
       operationId: createQuote
       parameters:
@@ -78,8 +77,6 @@ paths:
 
   /{id}:
     get:
-      security:
-        - APIKeyHeader: []
       description: Returns a quote based on a single ID
       operationId: find quote by id
       parameters:
@@ -102,8 +99,6 @@ paths:
           description: Server error
 
     put:
-      security:
-        - APIKeyHeader: []
       description: Update a single quote
       operationId: updateQuote
       parameters:
@@ -131,8 +126,6 @@ paths:
           description: Server error
     
     delete:
-      security:
-        - APIKeyHeader: []
       description: deletes a single quote based on the ID supplied
       operationId: deleteQuote
       parameters:
