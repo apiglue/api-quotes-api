@@ -1,6 +1,6 @@
 {
-  "name": "sample-quote-api",
-  "version": "1.2.0",
+  "name": "api-quote-api",
+  "version": "1.3.0",
   "description": "",
   "engines": {
     "node": "7.7.1"
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/marcelo10/sample-quote-api.git"
+    "url": "git+https://github.com/marcelo10/api-quote-api.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/marcelo10/sample-quote-api/issues"
+    "url": "https://github.com/marcelo10/api-quote-api/issues"
   },
-  "homepage": "https://github.com/marcelo10/sample-quote-api#readme",
+  "homepage": "https://github.com/marcelo10/api-quote-api#readme",
   "dependencies": {
     "body-parser": "^1.17.1",
     "dotenv": "^4.0.0",
