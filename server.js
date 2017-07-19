@@ -18,37 +18,6 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 
-app.route('/v1/quotes/random')
-  .get(function (req, res, next)  {
-    
-      const results = [];
-
-      pg.connect(connectionString, (err, client, done) => {
-
-        if(err) {
-          done();
-          console.log(err);
-          return res.status(500).json({success: false, data: err});
-        }
-
-        var query = client.query('SELECT quote FROM quotes ORDER BY random() limit 1');               
-        
-        query.on('error', function(err) {
-          console.log('Query error: ' + err);
-          return res.status(500).send();
-        });
-
-        query.on('row', (row) => {
-          results.push(row);
-        });
-
-        query.on('end', () => {
-          done();
-          return res.json(results);
-        });
-      });      
-  });
-
 //APIKEY required for all other methods
 app.use(function (req, res, next) {
     if (req.header('apikey') == localApiKey) {
@@ -60,7 +29,75 @@ app.use(function (req, res, next) {
         }
 });
 
+app.route('/v1/quotes/random')
+  .get(function (req, res, next)  {
+    
+      const results = [];
+
+      pg.connect(connectionString, (err, client, done) => {
+
+        if(err) {
+          done();
+          console.log(err);
+          return res.status(500).send();
+        }
+
+        var query = client.query('SELECT id,quote FROM quotes ORDER BY random() limit 1');               
+        
+        query.on('error', function(err) {
+          console.log('Query error: ' + err);
+          return res.status(500).send();
+        });
+
+        query.on('row', (row) => {
+          results.push(row);
+        });
+
+        query.on('end', function(result){
+          if(result.rowCount==0) {
+            done();
+            return res.status(404).send();
+          }
+          done();
+          return res.json(results);
+        });
+      });      
+  });
+
 app.route('/v1/quotes')
+  .get(function (req, res, next) {
+      const results = [];
+
+      pg.connect(connectionString, (err, client, done) => {
+
+        if(err) {
+          done();
+          console.log(err);
+          return res.status(500).send();
+        }
+
+        var query = client.query('SELECT id,quote FROM quotes ORDER BY id ASC');
+        
+        query.on('error', function(err) {
+          console.log('Query error: ' + err);
+          return res.status(500).send();
+        });
+
+        query.on('row', (row) => {
+          results.push(row);
+        });
+
+        query.on('end', function(result){
+          if(result.rowCount==0) {
+            done();
+            return res.status(404).send();
+          }
+          done();
+          return res.json(results);
+        });
+
+      });
+  })
   .post(function (req, res, next) {
 
       if (!req.body.quote)
@@ -76,7 +113,7 @@ app.route('/v1/quotes')
         if(err) {
           done();
           console.log("[ERROR]"+err);
-          return res.status(500).json({success: false, data: err});
+          return res.status(500).send();
         }
 
         var query = client.query('INSERT INTO quotes(quote) values($1)',[data.quote]);
@@ -88,34 +125,6 @@ app.route('/v1/quotes')
 
         return res.status(201).send();
    
-      });
-  })  
-  .get(function (req, res, next) {
-      const results = [];
-
-      pg.connect(connectionString, (err, client, done) => {
-
-        if(err) {
-          done();
-          console.log(err);
-          return res.status(500).json({success: false, data: err});
-        }
-
-        var query = client.query('SELECT id,quote FROM quotes ORDER BY id ASC');
-        
-        query.on('error', function(err) {
-          console.log('Query error: ' + err);
-          return res.status(500).send();
-        });
-
-        query.on('row', (row) => {
-          results.push(row);
-        });
-
-        query.on('end', () => {
-          done();
-          return res.json(results);
-        });
       });
   });
 
@@ -130,10 +139,10 @@ app.route('/v1/quotes/:quote_id([0-9]+)')
         if(err) {
           done();
           console.log(err);
-          return res.status(500).json({success: false, data: err});
+          return res.status(500).send();
         }           
 
-        var query = client.query('SELECT quote FROM quotes WHERE id=($1)',[quote_id]);
+        var query = client.query('SELECT id,quote FROM quotes WHERE id=($1)',[quote_id]);
 
         query.on('error', function(err) {
           console.log('Query error: ' + err);
@@ -144,7 +153,11 @@ app.route('/v1/quotes/:quote_id([0-9]+)')
           results.push(row);
         });
 
-        query.on('end', () => {
+        query.on('end', function(result){
+          if(result.rowCount==0) {
+            done();
+            return res.status(404).send();
+          }
           done();
           return res.json(results);
         });
@@ -155,7 +168,7 @@ app.route('/v1/quotes/:quote_id([0-9]+)')
       
       if (!req.body.quote)
       {
-         return res.status(412).json({error: "Quote not found on body"});
+         return res.status(412).send();
       }
 
       const results = [];
@@ -167,7 +180,7 @@ app.route('/v1/quotes/:quote_id([0-9]+)')
         if(err) {
           done();
           console.log(err);
-          return res.status(500).json({success: false, data: err});
+          return res.status(500).send();
         }
 
         client.query('UPDATE quotes SET quote=($1) WHERE id=($2)',[data.quote, id]);
@@ -196,12 +209,15 @@ app.route('/v1/quotes/:quote_id([0-9]+)')
         if(err) {
           done();
           console.log(err);
-          return res.status(500).json({success: false, data: err});
+          return res.status(500).send();
         }
 
-        client.query('DELETE FROM quotes WHERE id=($1)', [id]);
+        const query = client.query('DELETE FROM quotes WHERE id=($1)', [id]);
         
-        return res.status(204).send();
+        query.on('end', function() {
+          done();
+           return res.status(204).send();
+        });        
 
       });
   });

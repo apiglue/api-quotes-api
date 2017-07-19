@@ -6,7 +6,7 @@ info:
   termsOfService: http://swagger.io/terms/
   contact:
     name: Marcelo
-    email: foo@example.com
+    email: letschat@marcelo.tech
     url: http://twitter.com/apiglue
   license:
     name: MIT
@@ -15,41 +15,65 @@ host: apiquote-api.herokuapp.com
 basePath: /v1/quotes
 schemes:
   - https
-consumes:
-  - application/json
-produces:
-  - application/json
+  
+security:
+  - APIKeyHeader: []  
+  
 paths:
   /random:
     get:
       description: Return a random api quote
       operationId: random
       responses:
-        200:
-          description: Quote response
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/NewQuote'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /:
-    get:
-      description: Return all quotes
-      operationId: random
-      responses:
-        200:
+        '200':
           description: Quote response
           schema:
             type: array
             items:
               $ref: '#/definitions/Quote'
-        default:
-          description: unexpected error
+        '404':
+          description: No quotes were found (possible empty db)
+        '500':
+          description: Server error
+  /:
+    get:
+      description: Return all quotes
+      operationId: allrandom
+      responses:
+        '200':
+          description: Quote response
           schema:
-            $ref: '#/definitions/Error'
+            type: array
+            items:
+              $ref: '#/definitions/Quote'
+        '401':
+          description: invalid api key
+        '404':
+          description: No quotes were found (possible empty db)          
+        '500':
+          description: Server error          
+    post:
+      description: Create a single quote
+      operationId: createQuote
+      parameters:
+        - name: quote
+          in: formData
+          description: quote to be added
+          required: true
+          type: string
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Quote Created
+        '401':
+          description: Invalid api key
+        '412':
+          description: Quote not supplied
+        '500':
+          description: Server error
 
   /{id}:
     get:
@@ -63,87 +87,78 @@ paths:
           type: integer
           format: int64
       responses:
-        200:
-          description: pet response
+        '200':
+          description: Quote response
           schema:
             $ref: '#/definitions/Quote'
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-    post:
-      description: Create a single quote
-      operationId: createQuote
+        '401':
+          description: Invalid api key
+        '404':
+          description: Quote not found
+        '500':
+          description: Server error
+
+    put:
+      description: Update a single quote
+      operationId: updateQuote
       parameters:
         - name: id
           in: path
-          description: ID of pet to delete
+          description: ID of quote to fetch
           required: true
           type: integer
           format: int64
+        - name: quote
+          in: formData
+          description: Id of the quote to be updated
+          required: true
+          type: string
+      consumes:
+        - application/x-www-form-urlencoded
       responses:
-        204:
-          description: pet deleted
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-    put:
+        '204':
+          description: Quote updated
+        '401':
+          description: Invalid api key
+        '412':
+          description: Quote not supplied
+        '500':
+          description: Server error
+    
+    delete:
       description: deletes a single quote based on the ID supplied
       operationId: deleteQuote
       parameters:
         - name: id
           in: path
-          description: ID of pet to delete
+          description: ID of quote to delete
           required: true
           type: integer
           format: int64
       responses:
-        204:
-          description: pet deleted
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'            
-    delete:
-      description: deletes a single pet based on the ID supplied
-      operationId: deletePet
-      parameters:
-        - name: id
-          in: path
-          description: ID of pet to delete
-          required: true
-          type: integer
-          format: int64
-      responses:
-        204:
-          description: pet deleted
-        default:
-          description: unexpected error
-          schema:
-            $ref: '#/definitions/Error'
+        '204':
+          description: Quote deleted
+        '401':
+          description: Invalid api key
+        '500':
+          description: Server error
+          
+securityDefinitions:
+   APIKeyHeader:
+     type: apiKey
+     in: header
+     name: apiKey
+    
 definitions:
   Quote:
-    allOf:
-      - $ref: '#/definitions/NewQuote'
-      - required:
-        - id
-        properties:
-          id:
-            type: integer
-            format: int64
-         
-  NewQuote:
-    required:
-      - quote
+    type: object
     properties:
-      name:
+      id:
+        type: integer
+        format: int64
+        description: quote id
+        example: 42
+      quote:
         type: string
-      tag:
-        type: string
-  Error:
-    required:
-      - message
-    properties:
-      message:
-        type: string
+        description: quote itself
+        example: 'KEEP CALM and let the API handle it'
