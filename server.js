@@ -19,15 +19,15 @@ app.use(bodyParser.json());
 
 
 //APIKEY required for all other methods
-app.use(function (req, res, next) {
-    if (req.header('apikey') == localApiKey) {
-        next();
-    }
-    else {
-          res.status(401);
-          res.json({message: 'invalid api key'});
-        }
-});
+// app.use(function (req, res, next) {
+//    if (req.header('apikey') == localApiKey) {
+//        next();
+//    }
+//    else {
+//          res.status(401);
+//          res.json({message: 'invalid api key'});
+//        }
+// });
 
 app.route('/v1/quotes/random')
   .get(function (req, res, next)  {
