@@ -5,8 +5,9 @@ require('dotenv').config();
 var express = require('express');
 var bodyParser = require('body-parser')
 var pg = require('pg');
+var fs = require('fs');
 
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 const connectionString = process.env.DATABASE_URL;
 const localApiKey = process.env.API_KEY;
 
@@ -18,16 +19,24 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 
-//APIKEY required for all other methods
-// app.use(function (req, res, next) {
-//    if (req.header('apikey') == localApiKey) {
-//        next();
-//    }
-//    else {
-//          res.status(401);
-//          res.json({message: 'invalid api key'});
-//        }
-// });
+app.route('/swagger')
+  .get(function (req, res, next)  {
+
+    var file="swagger.json";
+    
+    if(!fs.existsSync(file)) {
+      console.log("File not found");
+      return res.status(500).send();
+    }
+
+      // Read the file and do anything you want
+    var  content = fs.readFileSync(file, 'utf-8');
+    
+    return res.status(200).send(JSON.parse(content)); 
+
+
+});
+
 
 app.route('/v1/quotes/random')
   .get(function (req, res, next)  {
@@ -63,6 +72,17 @@ app.route('/v1/quotes/random')
         });
       });      
   });
+
+ // APIKEY required for all other methods
+app.use(function (req, res, next) {
+  if (req.header('apikey') == localApiKey) {
+      next();
+  }
+  else {
+        res.status(401);
+        res.json({message: 'invalid api key'});
+      }
+});
 
 app.route('/v1/quotes')
   .get(function (req, res, next) {
