@@ -67,7 +67,7 @@ app.route('/v1/quotes/lametric/random')
             return res.status(404).send();
           }
           done();
-          return res.json({frames:[{text:results.quote,icon:25027}]});
+          return res.json({frames:[{text:"testing testing",icon:25027}]});
         });
       });      
   });
