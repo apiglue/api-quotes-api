@@ -37,7 +37,7 @@ app.route('/swagger')
 
 });
 
-app.route('/v1/quotes/lametric')
+app.route('/v1/quotes/lametric/random')
   .get(function (req, res, next)  {
     
       const results = [];
@@ -67,7 +67,7 @@ app.route('/v1/quotes/lametric')
             return res.status(404).send();
           }
           done();
-          return res.json(JSON.stringify({frames:[{text:results.quote,icon:25027}]}));
+          return res.json({frames:[{text:results.quote,icon:25027}]});
         });
       });      
   });
