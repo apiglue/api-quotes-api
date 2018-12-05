@@ -37,6 +37,40 @@ app.route('/swagger')
 
 });
 
+app.route('/v1/quotes/lametric')
+  .get(function (req, res, next)  {
+    
+      const results = [];
+
+      pg.connect(connectionString, (err, client, done) => {
+
+        if(err) {
+          done();
+          console.log(err);
+          return res.status(500).send();
+        }
+
+        var query = client.query('SELECT id,quote FROM quotes ORDER BY random() limit 1');               
+        
+        query.on('error', function(err) {
+          console.log('Query error: ' + err);
+          return res.status(500).send();
+        });
+
+        query.on('row', (row) => {
+          results.push(row);
+        });
+
+        query.on('end', function(result){
+          if(result.rowCount==0) {
+            done();
+            return res.status(404).send();
+          }
+          done();
+          return res.json(JSON.stringify({frames:[{text:results.quote,icon:25027}]}));
+        });
+      });      
+  });
 
 app.route('/v1/quotes/random')
   .get(function (req, res, next)  {
