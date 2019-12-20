@@ -117,7 +117,6 @@ app.use(function (req, res, next) {
         res.json({message: 'invalid api key'});
       }
 });
-
 app.route('/v1/quotes')
   .get(function (req, res, next) {
       const results = [];
