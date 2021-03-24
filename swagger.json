@@ -7,7 +7,7 @@
     "termsOfService": "http://swagger.io/terms/",
     "contact": {
       "name": "Marcelo",
-      "email": "letschat@marcelo.tech",
+      "email": "letschat@apiglue.io",
       "url": "http://twitter.com/apiglue"
     },
     "license": {
@@ -19,11 +19,6 @@
   "basePath": "/v1/quotes",
   "schemes": [
     "https"
-  ],
-  "security": [
-    {
-      "APIKeyHeader": []
-    }
   ],
   "paths": {
     "/random": {
@@ -46,7 +41,8 @@
           "500": {
             "description": "Server error"
           }
-        }
+        },
+        "summary": "Get a random quote"
       }
     },
     "/": {
@@ -72,18 +68,30 @@
           "500": {
             "description": "Server error"
           }
-        }
+        },
+        "summary": "Get all quotes",
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
       },
       "post": {
         "description": "Create a single quote",
         "operationId": "createQuote",
         "parameters": [
           {
-            "name": "quote",
-            "in": "formData",
-            "description": "quote to be added",
-            "required": true,
-            "type": "string"
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "quote": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
           }
         ],
         "consumes": [
@@ -96,16 +104,22 @@
           "201": {
             "description": "Quote Created"
           },
+          "400": {
+            "description": "Quote not supplied"
+          },
           "401": {
             "description": "Invalid api key"
-          },
-          "412": {
-            "description": "Quote not supplied"
           },
           "500": {
             "description": "Server error"
           }
-        }
+        },
+        "summary": "Create a quote",
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
       }
     },
     "/{id}": {
@@ -138,7 +152,13 @@
           "500": {
             "description": "Server error"
           }
-        }
+        },
+        "summary": "Get a quote by Id",
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
       },
       "put": {
         "description": "Update a single quote",
@@ -153,11 +173,22 @@
             "format": "int64"
           },
           {
-            "name": "quote",
-            "in": "formData",
-            "description": "Id of the quote to be updated",
-            "required": true,
-            "type": "string"
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "description": "",
+              "type": "object",
+              "properties": {
+                "quote": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "quote"
+              ]
+            },
+            "description": ""
           }
         ],
         "consumes": [
@@ -167,16 +198,22 @@
           "204": {
             "description": "Quote updated"
           },
+          "400": {
+            "description": "Quote not supplied"
+          },
           "401": {
             "description": "Invalid api key"
-          },
-          "412": {
-            "description": "Quote not supplied"
           },
           "500": {
             "description": "Server error"
           }
-        }
+        },
+        "summary": "Update a quote",
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
       },
       "delete": {
         "description": "deletes a single quote based on the ID supplied",
@@ -201,15 +238,62 @@
           "500": {
             "description": "Server error"
           }
-        }
+        },
+        "summary": "Delete a quote",
+        "security": [
+          {
+            "apikey": []
+          }
+        ]
+      }
+    },
+    "/random/lametric": {
+      "get": {
+        "summary": "Get a random quote for Lametric",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuoteLametric"
+            },
+            "examples": {
+              "example-1": {
+                "frames": [
+                  {
+                    "text": "I <3 APIs",
+                    "icon": 25027
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "operationId": "get-random-lametric",
+        "description": ""
       }
     }
   },
   "securityDefinitions": {
-    "APIKeyHeader": {
+    "apikey": {
       "type": "apiKey",
       "in": "header",
-      "name": "apiKey"
+      "name": "API Key",
+      "description": ""
     }
   },
   "definitions": {
@@ -220,7 +304,8 @@
           "type": "integer",
           "format": "int64",
           "description": "quote id",
-          "example": 42
+          "example": 42,
+          "readOnly": true
         },
         "quote": {
           "type": "string",
@@ -228,6 +313,35 @@
           "example": "KEEP CALM and let the API handle it"
         }
       }
+    },
+    "QuoteLametric": {
+      "description": "",
+      "type": "object",
+      "properties": {
+        "frames": {
+          "type": "array",
+          "uniqueItems": true,
+          "minItems": 1,
+          "items": {
+            "required": [
+              "text",
+              "icon"
+            ],
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "icon": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "frames"
+      ]
     }
   }
 }

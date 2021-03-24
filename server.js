@@ -33,7 +33,7 @@ app.get('/oas', (req, res, next) => {
   return res.status(200).send(JSON.parse(content));
 });
 
-app.get('/v1/quotes/lametric/random', (req, res, next) => {
+app.get('/v1/quotes/random/lametric', (req, res, next) => {
   dbClient.query('SELECT id,quote FROM quotes ORDER BY random() limit 1', (err, results) => {
     if (err) {
       logger.error(`Query error: ${err}`);
