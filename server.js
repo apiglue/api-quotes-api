@@ -1,38 +1,28 @@
-require('newrelic');
+require('./config/newrelic');
 
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 const express = require('express');
-const fs = require('fs');
+const path = require('path');
 const helmet = require('helmet');
+
 const { body, validationResult } = require('express-validator');
-const logger = require('./config/logger');
+
 const dbClient = require('./db/postgres');
+const { logger, pinoHttp } = require('./config/logger');
+const { validateJwt, checkJwtScope, auth0Scopes } = require('./config/auth0');
 
 const port = process.env.PORT || 3000;
-const localApiKey = process.env.API_KEY;
 
 const app = express();
 
+app.use('/oas', express.static(path.join(__dirname, 'public')));
 app.use(helmet());
+app.use(pinoHttp);
+app.use(express.json());
 
-app.use(express.json());// app.use(expressLogger);
-
-app.get('/oas', (req, res, next) => {
-  const file = 'swagger.json';
-
-  if (!fs.existsSync(file)) {
-    logger.error('Swagger file not found');
-    return res.status(500).send();
-  }
-
-  // Read the file and do anything you want
-  const content = fs.readFileSync(file, 'utf-8');
-
-  return res.status(200).send(JSON.parse(content));
-});
-
+// NON-SECURED ROUTES
 app.get('/v1/quotes/random/lametric', (req, res, next) => {
   dbClient.query('SELECT id,quote FROM quotes ORDER BY random() limit 1', (err, results) => {
     if (err) {
@@ -47,7 +37,6 @@ app.get('/v1/quotes/random/lametric', (req, res, next) => {
     return res.json({ frames: [{ text: results.rows[0].quote, icon: 25027 }] });
   });
 });
-
 app.get('/v1/quotes/random', (req, res, next) => {
   dbClient.query('SELECT id,quote FROM quotes ORDER BY random() limit 1', (err, results) => {
     if (err) {
@@ -63,16 +52,8 @@ app.get('/v1/quotes/random', (req, res, next) => {
   });
 });
 
-// APIKEY required for all other methods
-app.use((req, res, next) => {
-  if (req.header('apikey') === localApiKey) {
-    next();
-  } else {
-    res.status(401);
-    res.json({ message: 'invalid api key' });
-  }
-});
-app.get('/v1/quotes', (req, res, next) => {
+// SECURED ENDPOINTS
+app.get('/v1/quotes', validateJwt(), checkJwtScope(auth0Scopes.readOnly), (req, res, next) => {
   dbClient.query('SELECT id,quote FROM quotes ORDER BY id ASC', (err, results) => {
     if (err) {
       logger.error(`Query error: ${err}`);
@@ -86,24 +67,24 @@ app.get('/v1/quotes', (req, res, next) => {
     return res.json(results.rows);
   });
 });
-app.post('/v1/quotes', body('quote').isString(), (req, res, next) => {
+app.post('/v1/quotes', body('quote').isString(), validateJwt(), checkJwtScope(auth0Scopes.readWrite), (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
     return res.status(400).json();
   }
 
-  dbClient.query('INSERT INTO quotes(quote) values($1)', [req.body.quote], (err) => {
+  dbClient.query('INSERT INTO quotes(quote) values($1) RETURNING id', [req.body.quote], (err, results) => {
     if (err) {
       logger.error(`Query error: ${err}`);
       return res.status(500).send();
     }
-    return res.status(201).send();
+    const newlyCreatedQuoteId = results.rows[0].id;
+    return res.status(201).header({ Location: `/v1/quotes/${newlyCreatedQuoteId}` }).send();
   });
 });
-
-app.get('/v1/quotes/:quote_id([0-9]+)', (req, res, next) => {
-  const quoteId = req.params.quote_id;
+app.get('/v1/quotes/:quoteId([0-9]+)', validateJwt(), checkJwtScope(auth0Scopes.readOnly), (req, res, next) => {
+  const { quoteId } = req.params;
 
   dbClient.query('SELECT id, quote FROM quotes WHERE id = ($1)', [quoteId], (err, results) => {
     if (err) {
@@ -118,17 +99,17 @@ app.get('/v1/quotes/:quote_id([0-9]+)', (req, res, next) => {
     return res.json(results.rows);
   });
 });
-app.put('/v1/quotes/:quote_id([0-9]+)', body('quote').isString(), (req, res, next) => {
+app.put('/v1/quotes/:quoteId([0-9]+)', validateJwt(), checkJwtScope(auth0Scopes.readWrite), body('quote').isString(), (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
     return res.status(400).json();
   }
 
-  const id = req.params.quote_id;
+  const { quoteId } = req.params;
   const { quote } = req.body;
 
-  dbClient.query('UPDATE quotes SET quote=($1) WHERE id=($2)', [quote, id], (err) => {
+  dbClient.query('UPDATE quotes SET quote=($1) WHERE id=($2)', [quote, quoteId], (err) => {
     if (err) {
       logger.error(`Query error: ${err}`);
       return res.status(500).send();
@@ -136,15 +117,21 @@ app.put('/v1/quotes/:quote_id([0-9]+)', body('quote').isString(), (req, res, nex
     return res.status(204).send();
   });
 });
-app.delete('/v1/quotes/:quote_id([0-9]+)', (req, res, next) => {
-  const id = req.params.quote_id;
-  dbClient.query('DELETE FROM quotes WHERE id=($1)', [id], (err) => {
+app.delete('/v1/quotes/:quoteId([0-9]+)', validateJwt(), checkJwtScope(auth0Scopes.readWrite), (req, res, next) => {
+  const { quoteId } = req.params;
+  dbClient.query('DELETE FROM quotes WHERE id=($1)', [quoteId], (err) => {
     if (err) {
       logger.error(`Query error: ${err}`);
       return res.status(500).send();
     }
     return res.status(204).send();
   });
+});
+
+app.use((err, req, res, next) => {
+  if (err.name === 'UnauthorizedError') {
+    res.status(401).send('invalid token');
+  }
 });
 
 // RUN
