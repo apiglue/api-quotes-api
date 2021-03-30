@@ -7,6 +7,7 @@ const pinoHttp = require('pino-http')({
       method: req.method,
       url: req.url,
       user: req.raw.user,
+      headers: req.headers,
     }),
   },
 });
