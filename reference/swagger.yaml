@@ -1,0 +1,164 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: "Api quote api"
+  description: An api that will return an inspiring api quote randomly
+  termsOfService: http://swagger.io/terms/
+  contact:
+    name: Marcelo
+    email: letschat@marcelo.tech
+    url: http://twitter.com/apiglue
+  license:
+    name: MIT
+    url: http://github.com/gruntjs/grunt/blob/master/LICENSE-MIT
+host: apiquote-api.herokuapp.com
+basePath: /v1/quotes
+schemes:
+  - https
+  
+security:
+  - APIKeyHeader: []  
+  
+paths:
+  /random:
+    get:
+      description: Return a random api quote
+      operationId: random
+      responses:
+        '200':
+          description: Quote response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Quote'
+        '404':
+          description: No quotes were found (possible empty db)
+        '500':
+          description: Server error
+  /:
+    get:
+      description: Return all quotes
+      operationId: allrandom
+      responses:
+        '200':
+          description: Quote response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Quote'
+        '401':
+          description: invalid api key
+        '404':
+          description: No quotes were found (possible empty db)          
+        '500':
+          description: Server error          
+    post:
+      description: Create a single quote
+      operationId: createQuote
+      parameters:
+        - name: quote
+          in: formData
+          description: quote to be added
+          required: true
+          type: string
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Quote Created
+        '401':
+          description: Invalid api key
+        '412':
+          description: Quote not supplied
+        '500':
+          description: Server error
+
+  /{id}:
+    get:
+      description: Returns a quote based on a single ID
+      operationId: find quote by id
+      parameters:
+        - name: id
+          in: path
+          description: ID of quote to fetch
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Quote response
+          schema:
+            $ref: '#/definitions/Quote'
+        '401':
+          description: Invalid api key
+        '404':
+          description: Quote not found
+        '500':
+          description: Server error
+
+    put:
+      description: Update a single quote
+      operationId: updateQuote
+      parameters:
+        - name: id
+          in: path
+          description: ID of quote to fetch
+          required: true
+          type: integer
+          format: int64
+        - name: quote
+          in: formData
+          description: Id of the quote to be updated
+          required: true
+          type: string
+      consumes:
+        - application/x-www-form-urlencoded
+      responses:
+        '204':
+          description: Quote updated
+        '401':
+          description: Invalid api key
+        '412':
+          description: Quote not supplied
+        '500':
+          description: Server error
+    
+    delete:
+      description: deletes a single quote based on the ID supplied
+      operationId: deleteQuote
+      parameters:
+        - name: id
+          in: path
+          description: ID of quote to delete
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: Quote deleted
+        '401':
+          description: Invalid api key
+        '500':
+          description: Server error
+          
+securityDefinitions:
+   APIKeyHeader:
+     type: apiKey
+     in: header
+     name: apiKey
+    
+definitions:
+  Quote:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: quote id
+        example: 42
+      quote:
+        type: string
+        description: quote itself
+        example: 'KEEP CALM and let the API handle it'
