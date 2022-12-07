@@ -22,7 +22,7 @@
   "homepage": "https://github.com/marcelo10/api-quote-api#readme",
   "dependencies": {
     "dotenv": "^9.0.2",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "express-jwt": "^6.0.0",
     "express-jwt-authz": "^2.4.1",
     "express-validator": "^6.10.0",
